@@ -1,24 +1,35 @@
-name: Build Lizzy APK
+name: Build APK
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build APK
-        uses: Digreatbrian/buildozer-action@v2
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          python-version: "3.11"
-          buildozer_version: stable
-          
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Give permission
+        run: chmod +x gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: lizzy-apk
-          path: bin/*.apk
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
