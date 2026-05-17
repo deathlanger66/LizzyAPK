@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import "./globals.css";
 
 export default function Home() {
   const [msg, setMsg] = useState("");
@@ -8,17 +9,13 @@ export default function Home() {
 
   useEffect(() => {
     const salvo = localStorage.getItem("lizzy_chat");
-    if (salvo) {
-      setChat(JSON.parse(salvo));
-    } else {
-      setChat([{ role: "lizzy", text: "Oiii 💜" }]);
-    }
+    setChat(salvo ? JSON.parse(salvo) : [
+      { role: "lizzy", text: "Oii" }
+    ]);
   }, []);
 
   useEffect(() => {
-    if (chat.length > 0) {
-      localStorage.setItem("lizzy_chat", JSON.stringify(chat));
-    }
+    if (chat.length) localStorage.setItem("lizzy_chat", JSON.stringify(chat));
   }, [chat]);
 
   async function enviar() {
@@ -26,144 +23,73 @@ export default function Home() {
 
     const nova = [...chat, { role: "user", text: msg }];
     setChat(nova);
-
-    const userMsg = msg;
     setMsg("");
+
+    setChat([...nova, { role: "lizzy", text: "Digitando..." }]);
 
     try {
       const r = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: userMsg
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, history: nova.slice(-10) })
       });
 
       const data = await r.json();
 
-      setChat([
-        ...nova,
-        {
-          role: "lizzy",
-          text: data.reply
-        }
-      ]);
+      setChat([...nova, { role: "lizzy", text: data.reply }]);
     } catch {
-      setChat([
-        ...nova,
-        {
-          role: "lizzy",
-          text: "Deu erro 😭"
-        }
-      ]);
+      setChat([...nova, { role: "lizzy", text: "Deu erro 😭" }]);
     }
   }
 
-  function limparChat() {
+  function limpar() {
     localStorage.removeItem("lizzy_chat");
-    setChat([{ role: "lizzy", text: "Chat limpo 💜" }]);
+    setChat([{ role: "lizzy", text: "Chat limpo" }]);
   }
 
   return (
-    <main
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "#090914",
-        color: "white"
-      }}
-    >
-      <header
-        style={{
-          padding: "20px",
-          fontSize: "28px",
-          fontWeight: "bold",
-          color: "#c46cff",
-          borderBottom: "1px solid #2d1d40",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}
-      >
-        Lizzy 💜
+    <main className="app">
+      <section className="profile">
+        <div className="avatar">L</div>
+        <h1>LIZZY 💜</h1>
+        <p>Sua IA dark, rápida e inteligente.</p>
 
-        <button
-          onClick={limparChat}
-          style={{
-            background: "#7b2dff",
-            border: "none",
-            padding: "10px 14px",
-            borderRadius: "12px",
-            color: "white"
-          }}
-        >
-          Limpar
-        </button>
-      </header>
+        <div className="tags">
+          <span>natural</span>
+          <span>memória</span>
+          <span>criativa</span>
+          <span>direta</span>
+        </div>
 
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "20px"
-        }}
-      >
-        {chat.map((m, i) => (
-          <div
-            key={i}
-            style={{
-              background: m.role === "user" ? "#7b2dff" : "#1c1c2b",
-              padding: "14px",
-              marginBottom: "12px",
-              borderRadius: "18px",
-              maxWidth: "80%",
-              marginLeft: m.role === "user" ? "auto" : "0"
-            }}
-          >
-            {m.text}
+        <button onClick={limpar} className="clear">Limpar conversa</button>
+      </section>
+
+      <section className="chatBox">
+        <header>
+          <div>
+            <h2>Lizzy</h2>
+            <p>online • pronta pra conversar</p>
           </div>
-        ))}
-      </div>
+        </header>
 
-      <div
-        style={{
-          padding: "15px",
-          display: "flex",
-          gap: "10px",
-          borderTop: "1px solid #2d1d40"
-        }}
-      >
-        <input
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && enviar()}
-          placeholder="Digite..."
-          style={{
-            flex: 1,
-            padding: "14px",
-            borderRadius: "14px",
-            border: "none",
-            background: "#1c1c2b",
-            color: "white"
-          }}
-        />
+        <div className="messages">
+          {chat.map((m, i) => (
+            <div key={i} className={`msg ${m.role}`}>
+              {m.text}
+            </div>
+          ))}
+        </div>
 
-        <button
-          onClick={enviar}
-          style={{
-            background: "#7b2dff",
-            border: "none",
-            padding: "14px 18px",
-            borderRadius: "14px",
-            color: "white"
-          }}
-        >
-          Enviar
-        </button>
-      </div>
+        <footer>
+          <input
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && enviar()}
+            placeholder="Digite sua mensagem..."
+          />
+          <button onClick={enviar}>➤</button>
+        </footer>
+      </section>
     </main>
   );
-                           }
+                         }
