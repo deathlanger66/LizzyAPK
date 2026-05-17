@@ -1,8 +1,6 @@
 name: Build Lizzy APK
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -10,10 +8,17 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Build APK
         uses: Digreatbrian/buildozer-action@v2
         with:
-          python-version: 3.10
-          buildozer-cmd: buildozer android debug
+          python-version: "3.11"
+          buildozer_version: stable
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lizzy-apk
+          path: bin/*.apk
