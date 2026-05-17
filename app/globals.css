@@ -1,0 +1,11 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background: radial-gradient(circle at top,#1c102d,#09090f 55%);
+  color:white;
+  font-family: Arial, sans-serif;
+}
