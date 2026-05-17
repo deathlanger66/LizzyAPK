@@ -163,3 +163,9 @@ footer button {
     border-radius: 0;
   }
   }
+.chatImg {
+  width: 100%;
+  max-width: 350px;
+  border-radius: 16px;
+  margin-top: 10px;
+    }
