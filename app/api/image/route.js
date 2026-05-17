@@ -2,15 +2,17 @@ export async function POST(req) {
   try {
     const { prompt } = await req.json();
 
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&enhance=true&nologo=true`;
+    const cleanPrompt = `
+high quality, detailed, cinematic, neon purple cyberpunk style, ${prompt}
+`;
 
-    return Response.json({
-      imageUrl
-    });
+    const imageUrl =
+      "https://image.pollinations.ai/prompt/" +
+      encodeURIComponent(cleanPrompt) +
+      "?width=1024&height=1024&enhance=true&nologo=true&safe=true";
 
+    return Response.json({ imageUrl });
   } catch {
-    return Response.json({
-      error: true
-    });
+    return Response.json({ error: true });
   }
 }
