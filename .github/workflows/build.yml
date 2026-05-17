@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -15,5 +15,5 @@ jobs:
       - name: Build APK
         uses: Digreatbrian/buildozer-action@v2
         with:
-          workdir: .
-          buildozer_version: stable
+          python-version: 3.10
+          buildozer-cmd: buildozer android debug
