@@ -30,7 +30,7 @@ jobs:
 
       - name: Pin buildozer config
         run: |
-          sed -i 's/^requirements =.*/requirements = python3==3.10.11,kivy==2.3.0,requests,openai/' buildozer.spec
+          sed -i 's/^requirements =.*/requirements = python3==3.10.11,kivy==2.3.0,requests/' buildozer.spec
           sed -i 's/^android.api =.*/android.api = 33/' buildozer.spec
           sed -i 's/^android.minapi =.*/android.minapi = 24/' buildozer.spec
           sed -i 's/^android.ndk =.*/android.ndk = 25b/' buildozer.spec || true
@@ -39,7 +39,7 @@ jobs:
         env:
           ANDROID_SDK_ACCEPT_LICENSE: "true"
         run: |
-          yes | buildozer android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
