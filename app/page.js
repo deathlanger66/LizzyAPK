@@ -6,20 +6,23 @@ import "./globals.css";
 export default function Home() {
   const [msg, setMsg] = useState("");
   const [chat, setChat] = useState([]);
-  const fileRef = useRef(null);
+  const messagesRef = useRef(null);
 
   useEffect(() => {
     const salvo = localStorage.getItem("lizzy_chat");
     setChat(
       salvo
         ? JSON.parse(salvo)
-        : [{ role: "lizzy", text: "Oii" }]
+        : [{ role: "lizzy", text: "Oi 💜 no que posso ajudar?" }]
     );
   }, []);
 
   useEffect(() => {
     if (chat.length) {
       localStorage.setItem("lizzy_chat", JSON.stringify(chat));
+      if (messagesRef.current) {
+        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      }
     }
   }, [chat]);
 
@@ -30,28 +33,46 @@ export default function Home() {
     setMsg("");
 
     const nova = [...chat, { role: "user", text: texto }];
-    setChat(nova);
+    setChat([...nova, { role: "lizzy", text: "Digitando..." }]);
 
     const lower = texto.toLowerCase();
-
     const querImagem =
       lower.includes("gera imagem") ||
       lower.includes("crie imagem") ||
-      lower.includes("faz imagem") ||
       lower.includes("desenha") ||
       lower.includes("imagem de");
 
     if (querImagem) {
-      const digitando = [...nova, { role: "lizzy", text: "Gerando imagem..." }];
-      setChat(digitando);
-
       const r = await fetch("/api/image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
+        body: JSON.stringify({ prompt: texto })
+      });
+
+      const data = await r.json();
+
+      setChat([
+        ...nova,
+        {
+          role: "lizzy",
+          text: "Pronto ✨",
+          image: data.imageUrl
+        }
+      ]);
+      return;
+    }
+
+    try {
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          prompt: texto
+          message: texto,
+          history: nova.slice(-12)
         })
       });
 
@@ -61,98 +82,83 @@ export default function Home() {
         ...nova,
         {
           role: "lizzy",
-          text: "Pronto 😈",
-          image: data.imageUrl
+          text: data.reply
         }
       ]);
-
-      return;
+    } catch {
+      setChat([
+        ...nova,
+        {
+          role: "lizzy",
+          text: "Deu erro 😭"
+        }
+      ]);
     }
-
-    const digitando = [...nova, { role: "lizzy", text: "Digitando..." }];
-    setChat(digitando);
-
-    const r = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: texto,
-        history: nova.slice(-10)
-      })
-    });
-
-    const data = await r.json();
-
-    setChat([
-      ...nova,
-      {
-        role: "lizzy",
-        text: data.reply
-      }
-    ]);
   }
 
-  function uploadImagem(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-
-    setChat([
-      ...chat,
-      {
-        role: "user",
-        text: "Imagem enviada",
-        image: url
-      }
-    ]);
+  function limpar() {
+    localStorage.removeItem("lizzy_chat");
+    setChat([{ role: "lizzy", text: "Conversa limpa 💜" }]);
   }
 
   return (
     <main className="app">
-      <section className="profile">
-        <div className="avatar">L</div>
-        <h1>LIZZY 💜</h1>
-        <p>IA rápida • imagens • conversa natural</p>
-      </section>
+      <aside className="sidebar">
+        <div className="logoWrap">
+          <div className="logo">L</div>
+          <div>
+            <h1>LIZZY</h1>
+            <p>Advanced AI</p>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3>Status</h3>
+          <p>🟢 Online</p>
+        </div>
+
+        <div className="card">
+          <h3>Skills</h3>
+          <div className="tags">
+            <span>Chat</span>
+            <span>Imagem</span>
+            <span>Criativa</span>
+            <span>Rápida</span>
+          </div>
+        </div>
+
+        <button className="clearBtn" onClick={limpar}>
+          Limpar conversa
+        </button>
+      </aside>
 
       <section className="chatBox">
-        <header>
-          <h2>Lizzy</h2>
+        <header className="topbar">
+          <div>
+            <h2>Lizzy</h2>
+            <p>Inteligência conversacional</p>
+          </div>
         </header>
 
-        <div className="messages">
+        <div className="messages" ref={messagesRef}>
           {chat.map((m, i) => (
-            <div key={i} className={`msg ${m.role}`}>
-              {m.text}
+            <div key={i} className={`bubble ${m.role}`}>
+              <div>{m.text}</div>
               {m.image && <img src={m.image} alt="" className="chatImg" />}
             </div>
           ))}
         </div>
 
-        <footer>
+        <footer className="composer">
           <input
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && enviar()}
-            placeholder="Digite..."
+            placeholder="Pergunte qualquer coisa..."
           />
-
-          <button onClick={() => fileRef.current.click()}>📎</button>
-
-          <input
-            type="file"
-            ref={fileRef}
-            hidden
-            accept="image/*"
-            onChange={uploadImagem}
-          />
-
           <button onClick={enviar}>➤</button>
         </footer>
       </section>
     </main>
   );
-        }
+}
