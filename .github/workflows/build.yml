@@ -28,16 +28,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
+      - name: Force SDK license accept
+        run: |
+          mkdir -p ~/.android
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+
       - name: Pin buildozer config
         run: |
           sed -i 's/^requirements =.*/requirements = python3==3.10.11,kivy==2.3.0,requests/' buildozer.spec
           sed -i 's/^android.api =.*/android.api = 33/' buildozer.spec
           sed -i 's/^android.minapi =.*/android.minapi = 24/' buildozer.spec
-          sed -i 's/^android.ndk =.*/android.ndk = 25b/' buildozer.spec || true
 
       - name: Build APK
-        env:
-          ANDROID_SDK_ACCEPT_LICENSE: "true"
         run: |
           buildozer android debug
 
