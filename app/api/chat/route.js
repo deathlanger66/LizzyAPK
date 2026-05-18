@@ -51,4 +51,4 @@ Regras:
   } catch {
     return Response.json({ reply: "Deu erro na Lizzy 😭" });
   }
-          }
+      }
