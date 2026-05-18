@@ -10,20 +10,28 @@ export default function Home() {
   const messagesRef = useRef(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("lizzy_v4_chat");
-    setChat(saved ? JSON.parse(saved) : [
-      { role: "lizzy", text: "Oii" }
-    ]);
+    const saved = localStorage.getItem("lizzy_chat");
+    setChat(saved ? JSON.parse(saved) : [{ role: "lizzy", text: "Oii" }]);
   }, []);
 
   useEffect(() => {
-    if (chat.length) localStorage.setItem("lizzy_v4_chat", JSON.stringify(chat));
-    if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    if (chat.length) localStorage.setItem("lizzy_chat", JSON.stringify(chat));
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [chat]);
 
-  function isImagePrompt(text) {
+  function querImagem(text) {
     const t = text.toLowerCase();
-    return t.includes("gera imagem") || t.includes("cria imagem") || t.includes("faz imagem") || t.includes("desenha") || t.includes("imagem de");
+    return (
+      t.includes("gera imagem") ||
+      t.includes("gerar imagem") ||
+      t.includes("cria imagem") ||
+      t.includes("crie imagem") ||
+      t.includes("faz uma imagem") ||
+      t.includes("desenha") ||
+      t.includes("imagem de")
+    );
   }
 
   async function enviar() {
@@ -37,7 +45,7 @@ export default function Home() {
     setChat([...base, { role: "lizzy", text: "Pensando..." }]);
 
     try {
-      if (isImagePrompt(text)) {
+      if (querImagem(text)) {
         const r = await fetch("/api/image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -59,21 +67,18 @@ export default function Home() {
 
         const data = await r.json();
 
-        setChat([
-          ...base,
-          { role: "lizzy", text: data.reply || "Deu erro 😭" }
-        ]);
+        setChat([...base, { role: "lizzy", text: data.reply }]);
       }
     } catch {
-      setChat([...base, { role: "lizzy", text: "Deu erro 😭 tenta de novo." }]);
+      setChat([...base, { role: "lizzy", text: "Deu erro. Tenta de novo." }]);
     }
 
     setLoading(false);
   }
 
   function limpar() {
-    localStorage.removeItem("lizzy_v4_chat");
-    setChat([{ role: "lizzy", text: "Conversa limpa 💜" }]);
+    localStorage.removeItem("lizzy_chat");
+    setChat([{ role: "lizzy", text: "Conversa limpa" }]);
   }
 
   return (
@@ -83,30 +88,21 @@ export default function Home() {
           <div className="logo">L</div>
           <div>
             <h1>LIZZY</h1>
-            <p>Hyper AI System</p>
+            <p>Hyper AI</p>
           </div>
         </div>
 
         <div className="panel">
-          <h3>Status</h3>
           <p>🟢 Online</p>
-          <p>⚡ Modo rápido</p>
-          <p>🎨 Imagens ativadas</p>
+          <p>⚡ Resposta rápida</p>
+          <p>🎨 Gera imagens</p>
+          <p>🧠 Memória local</p>
+          <p>🌐 Busca simples</p>
         </div>
 
-        <div className="panel">
-          <h3>Ferramentas</h3>
-          <div className="chips">
-            <span>Chat</span>
-            <span>Imagem</span>
-            <span>Código</span>
-            <span>Ideias</span>
-            <span>Estudo</span>
-            <span>Criação</span>
-          </div>
-        </div>
-
-        <button className="clear" onClick={limpar}>Limpar conversa</button>
+        <button className="clear" onClick={limpar}>
+          Limpar conversa
+        </button>
       </aside>
 
       <section className="chat">
@@ -114,7 +110,7 @@ export default function Home() {
           <div className="miniLogo">💜</div>
           <div>
             <h2>Lizzy</h2>
-            <p>online • inteligente • rápida</p>
+            <p>online • pronta</p>
           </div>
         </header>
 
@@ -132,7 +128,7 @@ export default function Home() {
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && enviar()}
-            placeholder="Peça qualquer coisa..."
+            placeholder="Fale com a Lizzy..."
           />
           <button onClick={enviar}>{loading ? "..." : "➤"}</button>
         </footer>
