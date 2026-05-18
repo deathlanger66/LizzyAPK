@@ -73,7 +73,7 @@ export default function Home() {
 
   function limpar() {
     localStorage.removeItem("lizzy_v4_chat");
-    setChat([{ role: "lizzy", text: "Conversa limpa" }]);
+    setChat([{ role: "lizzy", text: "Conversa" }]);
   }
 
   return (
@@ -139,4 +139,4 @@ export default function Home() {
       </section>
     </main>
   );
-}
+          }
